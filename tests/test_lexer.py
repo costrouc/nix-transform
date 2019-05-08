@@ -12,10 +12,15 @@ from nixfmt import NixLexer
     ('12345', ('INT',)),
     ('1123.123', ('FLOAT',)),
     ('"asdf"', ('STRING',)),
+    ('''"multi
+line
+string
+"''', ('STRING',)),
     ('''\'\'multi
 line
 string
-\'\'''', ('STRING',)),
+\'\'''', ('INDENTED_STRING',)),
+    ("''this'is'a'string''", ('INDENTED_STRING',)),
     # paths
     ('./.', ('PATH',)), ('/home/user/.config/', ('PATH',)),
     ('~/scratch', ('HPATH',)), ('~/scratch/', ('HPATH',)),
@@ -59,9 +64,13 @@ a comment
     ('*', ('TIMES',)),
     ('/', ('DIVIDE',)),
     ('?', ('DEFAULT',)),
+    (',', ('COMMA',)),
 ])
 def test_lexer(lexer_tokens, text, tokens):
     expected_tokens = tuple(_.type for _ in lexer_tokens(text))
+    print(text)
+    print(tokens)
+    print(expected_tokens)
     assert tokens == expected_tokens
 
 

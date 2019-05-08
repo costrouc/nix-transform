@@ -6,6 +6,7 @@ class NixLexer(sly.Lexer):
     tokens = {
         WHITESPACE, COMMENT,
         TRUE, FALSE,
+        STRING, INDENTED_STRING,
         ID, INT, FLOAT, PATH, HPATH, SPATH, URI,
         ABORT, ASSERT, IMPORT, INHERIT, WITH,
         LET, IN,
@@ -19,7 +20,7 @@ class NixLexer(sly.Lexer):
         LBRACE, RBRACE,
         LBRACKET, RBRACKET,
         LPAREN, RPAREN,
-        SEMICOLON, COLON,
+        SEMICOLON, COLON, COMMA
     }
 
     TRUE = r'true'
@@ -45,8 +46,12 @@ class NixLexer(sly.Lexer):
     def COMMENT(self, t):
         return t
 
-    @_('".*"|\'\'[^\']*\'\'')
+    @_('"[^"]*"')
     def STRING(self, t):
+        return t
+
+    @_('\'\'([^\']|\'+[^\'])*\'+\'')
+    def INDENTED_STRING(self, t):
         return t
 
     @_('(([1-9][0-9]*\.[0-9]*)|(0?\.[0-9]+))([Ee][+-]?[0-9]+)?')
@@ -102,6 +107,7 @@ class NixLexer(sly.Lexer):
     RPAREN = r'\)'
     SEMICOLON = r'\;'
     COLON = r'\:'
+    COMMA = r','
 
     NOT = r'!'
 
