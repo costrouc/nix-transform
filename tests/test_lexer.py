@@ -11,17 +11,17 @@ from nixfmt import NixLexer
     ('asdf', ('ID',)),
     ('12345', ('INT',)),
     ('1123.123', ('FLOAT',)),
-    ('"asdf"', ('STRING',)),
-    (r'"a\"sd\"f"', ('STRING',)),
+    ('"asdf"', ('STRING_QUOTE', 'STRING', 'STRING_QUOTE')),
+    (r'"a\"sd\"f"', ('STRING_QUOTE', 'STRING', 'STRING_QUOTE')),
     ('''"multi
 line
 string
-"''', ('STRING',)),
+"''', ('STRING_QUOTE', 'STRING', 'STRING_QUOTE')),
     ('''\'\'multi
 line
 string
-\'\'''', ('INDENTED_STRING',)),
-    ("''this'is'a'string''", ('INDENTED_STRING',)),
+\'\'''', ('INDENTED_STRING_QUOTE', 'INDENTED_STRING', 'INDENTED_STRING_QUOTE')),
+    ("''this'is'a'string''", ('INDENTED_STRING_QUOTE', 'INDENTED_STRING', 'INDENTED_STRING_QUOTE')),
     # paths
     ('./.', ('PATH',)), ('/home/user/.config/', ('PATH',)),
     ('~/scratch', ('HPATH',)), ('~/scratch/', ('HPATH',)),

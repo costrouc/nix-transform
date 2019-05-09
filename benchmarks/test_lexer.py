@@ -44,6 +44,6 @@ def test_benchmark_lexer(tmp_path, repo_url):
     print(f'[{successful}/{len(filenames)}] succesfully lexed')
     print(f' total: {sum(timings)} [s]')
     print(f'   min: {min(timings)} [s]')
-    print(f'   max: {min(timings)} [s]')
+    print(f'   max: {max(timings)} [s]')
     print(f'  mean: {statistics.mean(timings)} [s]')
     print(f'median: {statistics.median(timings)} [s]')
