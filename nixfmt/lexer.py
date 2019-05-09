@@ -48,7 +48,7 @@ class NixLexer(sly.Lexer):
     def COMMENT(self, t):
         return t
 
-    @_(r'"[^"]*"')
+    @_(r'"(?:[^"\\]|\\.)*"')
     def STRING(self, t):
         return t
 
@@ -133,4 +133,4 @@ class NixLexer(sly.Lexer):
         return super().tokenize(text)
 
     def error(self, t):
-        raise LexError(f"Illegal character '{t.value[0]}' and lineno {t.lineno} and index {self.index}", t.value, self.index)
+        raise LexError(f"Illegal character '({t.value[0]}){t.value[1:10]}' and lineno {t.lineno} and index {self.index}", t.value, self.index)
