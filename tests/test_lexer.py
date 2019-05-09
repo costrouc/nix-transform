@@ -12,6 +12,7 @@ from nixfmt import NixLexer
     ('12345', ('INT',)),
     ('1123.123', ('FLOAT',)),
     ('"asdf"', ('STRING',)),
+    (r'"a\"sd\"f"', ('STRING',)),
     ('''"multi
 line
 string
@@ -67,9 +68,9 @@ a comment
     (',', ('COMMA',)),
 ])
 def test_lexer(lexer_tokens, text, tokens):
-    expected_tokens = tuple(_.type for _ in lexer_tokens(text))
     print(text)
     print(tokens)
+    expected_tokens = tuple(_.type for _ in lexer_tokens(text))
     print(expected_tokens)
     assert tokens == expected_tokens
 

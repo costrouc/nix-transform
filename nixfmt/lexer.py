@@ -17,6 +17,8 @@ class NixLexer(sly.Lexer):
         DOT,
         PLUS, MINUS, TIMES, DIVIDE,
         DEFAULT,
+        AT,
+        DOLLAR_LBRACE,
         LBRACE, RBRACE,
         LBRACKET, RBRACKET,
         LPAREN, RPAREN,
@@ -42,23 +44,23 @@ class NixLexer(sly.Lexer):
 
     OR_KW = 'or'
 
-    @_('#.*|\/\*([^*]|\*+[^*/])*\*+\/')
+    @_(r'#.*|\/\*([^*]|\*+[^*/])*\*+\/')
     def COMMENT(self, t):
         return t
 
-    @_('"[^"]*"')
+    @_(r'"[^"]*"')
     def STRING(self, t):
         return t
 
-    @_('\'\'([^\']|\'+[^\'])*\'+\'')
+    @_(r'\'\'([^\']|\'+[^\'])*\'+\'')
     def INDENTED_STRING(self, t):
         return t
 
-    @_('(([1-9][0-9]*\.[0-9]*)|(0?\.[0-9]+))([Ee][+-]?[0-9]+)?')
+    @_(r'(([1-9][0-9]*\.[0-9]*)|(0?\.[0-9]+))([Ee][+-]?[0-9]+)?')
     def FLOAT(self, t):
         return t
 
-    @_('[0-9]+')
+    @_(r'[0-9]+')
     def INT(self, t):
         t.value = int(t.value)
         return t
@@ -99,6 +101,8 @@ class NixLexer(sly.Lexer):
     UPDATE = r'\/\/'
     CONCAT = r'\+\+'
 
+    AT = r'\@'
+    DOLLAR_LBRACE = r'\$\{'
     LBRACKET = r'\['
     RBRACKET = r'\]'
     LBRACE = r'\{'
