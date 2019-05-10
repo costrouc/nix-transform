@@ -6,11 +6,14 @@ from nixfmt import NixLexer
 
 @pytest.mark.parametrize('text,tokens', [
     # values
+    ('null', ('NULL',)),
     ('true', ('TRUE',)),
     ('false', ('FALSE',)),
     ('asdf', ('ID',)),
     ('12345', ('INT',)),
     ('1123.123', ('FLOAT',)),
+    (r'"\n"', ('STRING_QUOTE', 'STRING', 'STRING_QUOTE')),
+    (r'"asdf$"', ('STRING_QUOTE', 'STRING', 'STRING', 'STRING_QUOTE')),
     ('"asdf"', ('STRING_QUOTE', 'STRING', 'STRING_QUOTE')),
     (r'"a\"sd\"f"', ('STRING_QUOTE', 'STRING', 'STRING_QUOTE')),
     ('''"multi
@@ -68,10 +71,10 @@ a comment
     (',', ('COMMA',)),
 ])
 def test_lexer(lexer_tokens, text, tokens):
-    print(text)
-    print(tokens)
+    print('text:', text)
+    print('tokens:', tokens)
     expected_tokens = tuple(_.type for _ in lexer_tokens(text))
-    print(expected_tokens)
+    print('expected:', expected_tokens)
     assert tokens == expected_tokens
 
 
@@ -91,9 +94,25 @@ comment
       'COMMENT')),
     ('[1 2]', ('LBRACKET', 'INT', 'WHITESPACE', 'INT', 'RBRACKET')),
     ('if true then 1 else 2', ('IF', 'WHITESPACE', 'TRUE', 'WHITESPACE', 'THEN', 'WHITESPACE', 'INT', 'WHITESPACE', 'ELSE', 'WHITESPACE', 'INT')),
+    ('''{ ... }:
+rec {}''', ('LBRACE', 'WHITESPACE', 'ELLIPSIS', 'WHITESPACE', 'RBRACE', 'COLON', 'WHITESPACE',
+            'REC', 'WHITESPACE', 'LBRACE', 'RBRACE')),
+    # no dollar at end of string
+    ('"asdf${0}"', ('STRING_QUOTE', 'STRING', 'DOLLAR_LBRACE', 'INT', 'RBRACE', 'STRING_QUOTE')),
+    ("''asdf${0}''", ('INDENTED_STRING_QUOTE', 'INDENTED_STRING', 'DOLLAR_LBRACE', 'INT', 'RBRACE', 'INDENTED_STRING_QUOTE')),
+    # dollar at end of string
+    ('"asdf$${0}"', ('STRING_QUOTE', 'STRING', 'STRING', 'DOLLAR_LBRACE', 'INT', 'RBRACE', 'STRING_QUOTE')),
+    ("''asdf$${0}''", ('INDENTED_STRING_QUOTE', 'INDENTED_STRING', 'INDENTED_STRING', 'DOLLAR_LBRACE', 'INT', 'RBRACE', 'INDENTED_STRING_QUOTE')),
+    ('''''
+      mkdir -p $out/bin
+      install -D $src $out/libexec/php-cs-fixer/php-cs-fixer.phar
+      makeWrapper ${php}/bin/php $out/bin/php-cs-fixer \
+        --add-flags "$out/libexec/php-cs-fixer/php-cs-fixer.phar"
+    '';''', ('INDENTED_STRING_QUOTE', 'INDENTED_STRING', 'DOLLAR_LBRACE', 'ID', 'RBRACE', 'INDENTED_STRING', 'INDENTED_STRING_QUOTE', 'SEMICOLON')),
 ])
 def test_complex_tokens(lexer_tokens, text, tokens):
+    print('text:', text)
+    print('tokens:', tokens)
     expected_tokens = tuple(_.type for _ in lexer_tokens(text))
-    print(expected_tokens)
-    print(tokens)
+    print('expected:', expected_tokens)
     assert tokens == expected_tokens
