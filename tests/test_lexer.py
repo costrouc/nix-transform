@@ -1,7 +1,4 @@
 import pytest
-import itertools
-
-from nixfmt import NixLexer
 
 
 @pytest.mark.parametrize('text,tokens', [
@@ -70,10 +67,10 @@ a comment
     ('?', ('DEFAULT',)),
     (',', ('COMMA',)),
 ])
-def test_lexer(lexer_tokens, text, tokens):
+def test_lexer(lex, text, tokens):
     print('text:', text)
     print('tokens:', tokens)
-    expected_tokens = tuple(_.type for _ in lexer_tokens(text))
+    expected_tokens = tuple(_.type for _ in lex(text))
     print('expected:', expected_tokens)
     assert tokens == expected_tokens
 
@@ -83,6 +80,8 @@ def test_lexer(lexer_tokens, text, tokens):
     ('1 + 2', ('INT', 'WHITESPACE', 'PLUS', 'WHITESPACE', 'INT')),
     ('import ./nixpkgs', ('IMPORT', 'WHITESPACE', 'PATH')),
     ('{a =1; }', ('LBRACE', 'ID', 'WHITESPACE', 'ASSIGN', 'INT', 'SEMICOLON', 'WHITESPACE', 'RBRACE')),
+    ('a.b.c', ('ID', 'DOT', 'ID', 'DOT', 'ID')),
+    ('a.b.${foo}', ('ID', 'DOT', 'ID', 'DOT', 'DOLLAR_LBRACE', 'ID', 'RBRACE')),
     ('''
 # this is a comment
 {a=1;}/*
@@ -110,9 +109,9 @@ rec {}''', ('LBRACE', 'WHITESPACE', 'ELLIPSIS', 'WHITESPACE', 'RBRACE', 'COLON',
         --add-flags "$out/libexec/php-cs-fixer/php-cs-fixer.phar"
     '';''', ('INDENTED_STRING_QUOTE', 'INDENTED_STRING', 'DOLLAR_LBRACE', 'ID', 'RBRACE', 'INDENTED_STRING', 'INDENTED_STRING_QUOTE', 'SEMICOLON')),
 ])
-def test_complex_tokens(lexer_tokens, text, tokens):
+def test_complex_tokens(lex, text, tokens):
     print('text:', text)
     print('tokens:', tokens)
-    expected_tokens = tuple(_.type for _ in lexer_tokens(text))
+    expected_tokens = tuple(_.type for _ in lex(text))
     print('expected:', expected_tokens)
     assert tokens == expected_tokens

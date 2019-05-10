@@ -1,2 +1,2 @@
 from .lexer import NixLexer
-# from .parser import
+from .parser import NixParser

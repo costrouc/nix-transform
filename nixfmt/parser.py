@@ -1,54 +1,102 @@
 import sly
 from sly.yacc import YaccError
 
+from .lexer import NixLexer, NixStringLexer, NixIndentedStringLexer
 
-# class TableauParser(sly.Parser):
-#     tokens = TableauLexer.tokens
 
-#     precedence = (
-#         ('left', 'OR'),
-#         ('left', 'AND'),
-#         ('nonassoc', 'LT', 'GT', 'GTEQ', 'LTEQ', 'NEQ', 'EQ'),
-#         ('left', 'PLUS', 'MINUS'),
-#         ('left', 'TIMES', 'DIVIDE'),
-#         ('left', 'POWER'),
-#         ('right', 'UMINUS', 'NOT')
-#     )
+class NixParser(sly.Parser):
+    tokens = NixLexer.tokens | NixStringLexer.tokens | NixIndentedStringLexer.tokens
 
-#     @_('expr PLUS expr',
-#        'expr MINUS  expr',
-#        'expr TIMES  expr',
-#        'expr DIVIDE expr',
-#        'expr POWER expr',
-#        # comparison operation
-#        'expr LT   expr',
-#        'expr LTEQ expr',
-#        'expr NEQ  expr',
-#        'expr EQ   expr',
-#        'expr GT   expr',
-#        'expr GTEQ expr',
-#        # boolean operation
-#        'expr AND expr',
-#        'expr OR expr')
-#     def expr(self, p):
-#         op_map = {
-#             '+': 'PLUS',
-#             '-': 'SUBTRACT',
-#             '*': 'MULTIPLY',
-#             '/': 'DIVIDE',
-#             '^': 'POWER',
-#             '<': 'LESSTHAN',
-#             '<=': 'LESSTHANEQUAL',
-#             '<>': 'NOTEQUAL',
-#             '!=': 'NOTEQUAL',
-#             '=': 'EQUAL',
-#             '==': 'EQUAL',
-#             '>': 'GREATERTHAN',
-#             '>=': 'GREATERTHANEQUAL',
-#             'AND': 'AND',
-#             'OR': 'OR',
-#         }
-#         return FunctionNode(op_map[p[1]], p.expr0, p.expr1)
+    @_('expr PLUS expr',
+       'expr MINUS  expr',
+       'expr TIMES  expr',
+       'expr DIVIDE expr',
+       # comparison operation
+       'expr LESS   expr',
+       'expr LEQ expr',
+       'expr NEQ  expr',
+       'expr EQ   expr',
+       'expr ASSIGN   expr',
+       'expr GREATER expr',
+       'expr GEQ expr',
+       # boolean operation
+       'expr AND expr',
+       'expr OR expr',
+       'expr OR_KW expr')
+    def expr(self, p):
+        op_map = {
+            '+': 'PLUS',
+            '-': 'SUBTRACT',
+            '*': 'TIMES',
+            '/': 'DIVIDE',
+            '^': 'POWER',
+            '<': 'LESSTHAN',
+            '<=': 'LESSTHANEQUAL',
+            '<>': 'NOTEQUAL',
+            '!=': 'NOTEQUAL',
+            '=': 'EQUAL',
+            '==': 'EQUAL',
+            '>': 'GREATERTHAN',
+            '>=': 'GREATERTHANEQUAL',
+            '&&': 'AND',
+            '||': 'OR',
+            'or': 'OR_KW',
+        }
+        return (op_map[p[1]], p.expr0, p.expr1)
+
+    @_('WHITESPACE expr')
+    def expr(self, p):
+        return p.expr[:1] + (('WHITESPACE', p.WHITESPACE),) + p.expr[1:]
+
+    @_('expr WHITESPACE')
+    def expr(self, p):
+        return p.expr + (('WHITESPACE', p.WHITESPACE),)
+
+    @_('factor')
+    def expr(self, p):
+        return p.factor
+
+    # ====== FACTOR =======
+    @_('INT')
+    def factor(self, p):
+        return ('INT', p.INT)
+
+    @_('FLOAT')
+    def factor(self, p):
+        return ('FLOAT', p.FLOAT)
+
+    @_('ID attribute_list')
+    def factor(self, p):
+        return ('ATTRIBUTE', p.ID) + p.attribute_list
+
+    @_('DOT ID attribute_list')
+    def attribute_list(self, p):
+        return (p.ID,) + p.attribute_list
+
+    @_('DOT DOLLAR_LBRACE expr RBRACE attribute_list')
+    def attribute_list(self, p):
+        return (('EXPRESSION', p.expr),)
+
+    @_('empty')
+    def attribute_list(self, p):
+        return ()
+
+    @_('')
+    def empty(self, p):
+        pass
+
+    def error(self, p):
+        if p:
+            raise YaccError(f'Syntax error at line {p.lineno}, token={p.type}, value={p.value}\n')
+        else:
+            raise YaccError('Parse error in input. EOF\n')
+
+    def parse(self, text):
+        lexer = NixLexer()
+        tokens = lexer.tokenize(text)
+        tree = super().parse(tokens)
+        return tree
+
 
 #     @_('NOT expr')
 #     def expr(self, p):

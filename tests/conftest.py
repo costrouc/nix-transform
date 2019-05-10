@@ -1,16 +1,20 @@
 from nixfmt import NixLexer
+from nixfmt import NixParser
 
 import pytest
 
 
 @pytest.fixture
-def lexer():
-    lexer = NixLexer()
-    return lexer
+def lex():
+    def _lex(text):
+        lexer = NixLexer()
+        return lexer.tokenize(text)
+    return _lex
 
 
 @pytest.fixture
-def lexer_tokens(lexer):
-    def _lexer_tokens(text):
-        return lexer.tokenize(text)
-    return _lexer_tokens
+def parse():
+    def _parse(text):
+        parser = NixParser()
+        return parser.parse(text)
+    return _parse
