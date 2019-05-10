@@ -1,0 +1,3 @@
+[console_scripts]
+nix-format = nixfmt.__main__:main
+

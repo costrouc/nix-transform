@@ -4,10 +4,10 @@ from nixfmt import NixLexer
 
 
 @pytest.mark.parametrize('filename', [
-    'examples/default.nix',
-    'examples/simple.nix',
-    'examples/zram.nix',
-    'examples/zfs.nix'
+    'examples/nix/default.nix',
+    'examples/nix/simple.nix',
+    'examples/nix/zram.nix',
+    'examples/nix/zfs.nix'
 ])
 def test_examples(lexer_tokens, filename):
     with open(filename) as f:
