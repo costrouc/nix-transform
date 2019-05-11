@@ -11,9 +11,18 @@ class NixParser(sly.Parser):
     def expr(self, p):
         return ('IF', p.expr0, p.expr1, p.expr2)
 
-    @_('IMPORT expr')
+    @_('WITH expr SEMICOLON expr')
     def expr(self, p):
-        return ('IMPORT', p.expr)
+        return ('WITH', p.expr0, p.expr1)
+
+    @_('IMPORT expr',
+       'ABORT expr')
+    def expr(self, p):
+        unaryop_map = {
+            'import': 'IMPORT',
+            'abort': 'ABORT'
+        }
+        return (unaryop_map[p[0]], p.expr)
 
     @_('expr PLUS expr',
        'expr MINUS  expr',
@@ -24,15 +33,15 @@ class NixParser(sly.Parser):
        'expr LEQ expr',
        'expr NEQ  expr',
        'expr EQ   expr',
-       'expr ASSIGN   expr',
        'expr GREATER expr',
        'expr GEQ expr',
        # boolean operation
        'expr AND expr',
        'expr OR expr',
-       'expr OR_KW expr')
+       'expr OR_KW expr',
+       'expr CONCAT expr')
     def expr(self, p):
-        op_map = {
+        binop_map = {
             '+': 'PLUS',
             '-': 'SUBTRACT',
             '*': 'TIMES',
@@ -49,8 +58,25 @@ class NixParser(sly.Parser):
             '&&': 'AND',
             '||': 'OR',
             'or': 'OR_KW',
+            '++': 'CONCAT'
         }
-        return (op_map[p[1]], p.expr0, p.expr1)
+        return (binop_map[p[1]], p.expr0, p.expr1)
+
+    @_('LBRACKET list_fillers RBRACKET')
+    def expr(self, p):
+        return ('LIST',) + p.list_fillers
+
+    @_('LBRACKET expr list_exprs RBRACKET')
+    def expr(self, p):
+        return ('LIST', p.expr) + p.list_exprs
+
+    @_('expr list_exprs')
+    def list_exprs(self, p):
+        return (p.expr,) + p.list_exprs
+
+    @_('empty')
+    def list_exprs(self, p):
+        return ()
 
     @_('LPAREN expr RPAREN')
     def expr(self, p):
@@ -76,6 +102,29 @@ class NixParser(sly.Parser):
     def expr(self, p):
         return p.factor
 
+    # ====== FILLER =======
+    @_('COMMENT')
+    def comment(self, p):
+        return ('COMMENT', p.COMMENT)
+
+    @_('WHITESPACE')
+    def whitespace(self, p):
+        return ('WHITESPACE', p.WHITESPACE)
+
+    @_('comment list_fillers',
+       'whitespace list_fillers')
+    def filler(self, p):
+        return (p[0],) + p.list_fillers
+
+    @_('comment list_fillers',
+       'whitespace list_fillers')
+    def list_fillers(self, p):
+        return (p[0],) + p.list_fillers
+
+    @_('empty')
+    def list_fillers(self, p):
+        return ()
+
     # ====== FACTOR =======
     @_('PATH')
     def factor(self, p):
@@ -92,6 +141,26 @@ class NixParser(sly.Parser):
     @_('URI')
     def factor(self, p):
         return ('URI', p.URI)
+
+    @_('STRING_QUOTE STRING STRING_QUOTE')
+    def factor(self, p):
+        return ('STRING', p.STRING)
+
+    @_('INDENTED_STRING_QUOTE INDENTED_STRING INDENTED_STRING_QUOTE')
+    def factor(self, p):
+        return ('INDENTED_STRING', p.INDENTED_STRING)
+
+    @_('NULL')
+    def factor(self, p):
+        return ('NULL', p.NULL)
+
+    @_('FALSE')
+    def factor(self, p):
+        return ('FALSE', p.FALSE)
+
+    @_('TRUE')
+    def factor(self, p):
+        return ('TRUE', p.TRUE)
 
     @_('INT')
     def factor(self, p):

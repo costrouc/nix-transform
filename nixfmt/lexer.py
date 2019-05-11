@@ -5,7 +5,7 @@ from sly.lex import LexError
 class NixLexer(sly.Lexer):
     tokens = {
         WHITESPACE, COMMENT,
-        TRUE, FALSE,
+        TRUE, FALSE, NULL,
         ID, INT, FLOAT, PATH, HPATH, SPATH, URI,
         ABORT, ASSERT, IMPORT, INHERIT, WITH,
         LET, IN,
@@ -150,7 +150,7 @@ class NixLexer(sly.Lexer):
 
 
 class NixStringLexer(sly.Lexer):
-    tokens = { STRING }
+    tokens = { STRING, STRING_QUOTE }
 
     @_(r'\$\{')
     def DOLLAR_LBRACE(self, t):
@@ -177,7 +177,7 @@ class NixStringLexer(sly.Lexer):
 
 
 class NixIndentedStringLexer(sly.Lexer):
-    tokens = { INDENTED_STRING }
+    tokens = { INDENTED_STRING, INDENTED_STRING_QUOTE }
 
     @_(r'\$\{')
     def DOLLAR_LBRACE(self, t):
