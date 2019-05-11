@@ -7,6 +7,14 @@ from .lexer import NixLexer, NixStringLexer, NixIndentedStringLexer
 class NixParser(sly.Parser):
     tokens = NixLexer.tokens | NixStringLexer.tokens | NixIndentedStringLexer.tokens
 
+    @_('IF expr THEN expr ELSE expr')
+    def expr(self, p):
+        return ('IF', p.expr0, p.expr1, p.expr2)
+
+    @_('IMPORT expr')
+    def expr(self, p):
+        return ('IMPORT', p.expr)
+
     @_('expr PLUS expr',
        'expr MINUS  expr',
        'expr TIMES  expr',
@@ -34,7 +42,7 @@ class NixParser(sly.Parser):
             '<=': 'LESSTHANEQUAL',
             '<>': 'NOTEQUAL',
             '!=': 'NOTEQUAL',
-            '=': 'EQUAL',
+            '=': 'ASSIGN',
             '==': 'EQUAL',
             '>': 'GREATERTHAN',
             '>=': 'GREATERTHANEQUAL',
@@ -44,6 +52,10 @@ class NixParser(sly.Parser):
         }
         return (op_map[p[1]], p.expr0, p.expr1)
 
+    @_('LPAREN expr RPAREN')
+    def expr(self, p):
+        return ('PARENTHESIS', p.expr)
+
     @_('WHITESPACE expr')
     def expr(self, p):
         return p.expr[:1] + (('WHITESPACE', p.WHITESPACE),) + p.expr[1:]
@@ -52,11 +64,35 @@ class NixParser(sly.Parser):
     def expr(self, p):
         return p.expr + (('WHITESPACE', p.WHITESPACE),)
 
+    @_('COMMENT expr')
+    def expr(self, p):
+        return p.expr[:1] + (('COMMENT', p.COMMENT),) + p.expr[1:]
+
+    @_('expr COMMENT')
+    def expr(self, p):
+        return p.expr + (('COMMENT', p.COMMENT),)
+
     @_('factor')
     def expr(self, p):
         return p.factor
 
     # ====== FACTOR =======
+    @_('PATH')
+    def factor(self, p):
+        return ('PATH', p.PATH)
+
+    @_('HPATH')
+    def factor(self, p):
+        return ('HPATH', p.HPATH)
+
+    @_('SPATH')
+    def factor(self, p):
+        return ('SPATH', p.SPATH)
+
+    @_('URI')
+    def factor(self, p):
+        return ('URI', p.URI)
+
     @_('INT')
     def factor(self, p):
         return ('INT', p.INT)
