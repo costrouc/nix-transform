@@ -6,6 +6,6 @@ python3.pkgs.buildPythonPackage {
     sly
   ];
 
-  checkInputs = with python3.pkgs; [ black pytest pytest-benchmark ];
+  checkInputs = with python3.pkgs; [ black pytest ];
 
 }

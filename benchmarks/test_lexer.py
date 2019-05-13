@@ -6,7 +6,7 @@ import statistics
 import pytest
 from sly.lex import LexError
 
-from nixfmt import NixLexer
+from nix_transform import NixLexer
 
 
 

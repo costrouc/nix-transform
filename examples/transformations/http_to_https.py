@@ -5,7 +5,7 @@ import tempfile
 import socket
 import os
 
-from nixfmt import NixLexer
+from nix_transform import NixLexer
 
 def find_https_urls(filename, contents):
     lexer = NixLexer()

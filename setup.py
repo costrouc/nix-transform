@@ -1,20 +1,20 @@
 from setuptools import setup
 
 setup(
-    name="nix-format",
+    name="nix-transform",
     description="Tools for formatting and transforming nix source code",
     version="0.1.0",
-    packages=["nixfmt"],
+    packages=["nix_transform"],
     license="MIT",
     long_description=open("README.md").read(),
     author="Christopher Ostrouchov",
     author_email="chris.ostrouchov@gmail.com",
-    url="https://github.com/costrouc/nix-format/",
+    url="https://github.com/costrouc/nix-transform/",
     install_requires=["sly"],
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "nix-format = nixfmt.__main__:main"
+            "nix-format = nix_transform.__main__:main"
         ]
     },
     classifiers=[

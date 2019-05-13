@@ -1,5 +1,5 @@
-from nixfmt import NixLexer
-from nixfmt import NixParser
+from nix_transform import NixLexer
+from nix_transform import NixParser
 
 import pytest
 
